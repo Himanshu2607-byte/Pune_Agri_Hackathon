@@ -13,13 +13,11 @@ const initialForm = {
   moisture: 48,
   organic_carbon: '',
   ec: '',
-  phosphorus_ppm: '',
   sulfur: '',
   zinc: '',
   iron: '',
   manganese: '',
   copper: '',
-  potassium_ppm: '',
   calcium: '',
   magnesium: '',
   sodium: '',
@@ -56,13 +54,11 @@ export default function SoilHealth() {
         moisture: Number(form.moisture),
         organic_carbon: form.organic_carbon === '' ? null : Number(form.organic_carbon),
         ec: form.ec === '' ? null : Number(form.ec),
-        phosphorus_ppm: form.phosphorus_ppm === '' ? null : Number(form.phosphorus_ppm),
         sulfur: form.sulfur === '' ? null : Number(form.sulfur),
         zinc: form.zinc === '' ? null : Number(form.zinc),
         iron: form.iron === '' ? null : Number(form.iron),
         manganese: form.manganese === '' ? null : Number(form.manganese),
         copper: form.copper === '' ? null : Number(form.copper),
-        potassium_ppm: form.potassium_ppm === '' ? null : Number(form.potassium_ppm),
         calcium: form.calcium === '' ? null : Number(form.calcium),
         magnesium: form.magnesium === '' ? null : Number(form.magnesium),
         sodium: form.sodium === '' ? null : Number(form.sodium),
@@ -204,19 +200,6 @@ export default function SoilHealth() {
             </div>
 
             <div className="soil-field">
-              <label className="soil-label">{t('soil_field_phosphorus_ppm')}</label>
-              <input
-                className="soil-input"
-                type="number"
-                min="0"
-                step="0.1"
-                value={form.phosphorus_ppm}
-                onChange={(e) => handleChange('phosphorus_ppm', e.target.value)}
-                placeholder={t('soil_optional')}
-              />
-            </div>
-
-            <div className="soil-field">
               <label className="soil-label">{t('soil_field_sulfur')}</label>
               <input
                 className="soil-input"
@@ -277,19 +260,6 @@ export default function SoilHealth() {
                 step="0.01"
                 value={form.copper}
                 onChange={(e) => handleChange('copper', e.target.value)}
-                placeholder={t('soil_optional')}
-              />
-            </div>
-
-            <div className="soil-field">
-              <label className="soil-label">{t('soil_field_potassium_ppm')}</label>
-              <input
-                className="soil-input"
-                type="number"
-                min="0"
-                step="0.1"
-                value={form.potassium_ppm}
-                onChange={(e) => handleChange('potassium_ppm', e.target.value)}
                 placeholder={t('soil_optional')}
               />
             </div>

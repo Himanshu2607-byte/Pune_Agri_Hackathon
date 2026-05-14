@@ -1,8 +1,8 @@
 // In production (Cloud Run): VITE_API_BASE_URL="" → same-origin calls (/predict, /chat, etc.)
-// In dev mode: falls back to localhost with /api prefix (Vite proxy rewrites /api → backend)
+// In dev mode: fall back to the local FastAPI backend directly.
 const API_BASE = import.meta.env.VITE_API_BASE_URL !== undefined
   ? import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '')
-  : (import.meta.env.DEV ? '/api' : '');
+  : (import.meta.env.DEV ? 'http://127.0.0.1:8000' : '');
 
 async function fetchWithRetry(url, options = {}, retries = 2, delayMs = 1500) {
   try {
