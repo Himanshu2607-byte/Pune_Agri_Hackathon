@@ -70,6 +70,76 @@ METRIC_CONFIG: dict[str, dict[str, Any]] = {
         "label": {"en": "Electrical Conductivity", "hi": "विद्युत चालकता"},
         "unit": "dS/m",
     },
+    "phosphorus_ppm": {
+        "ideal": (25.0, 35.0),
+        "tolerance": 10.0,
+        "weight": 0.06,
+        "label": {"en": "Phosphorus (P) - ppm", "hi": "फॉस्फोरस (P) - ppm"},
+        "unit": "ppm",
+    },
+    "sulfur": {
+        "ideal": (7.0, 15.0),
+        "tolerance": 8.0,
+        "weight": 0.04,
+        "label": {"en": "Sulfur (S)", "hi": "सल्फर (S)"},
+        "unit": "ppm",
+    },
+    "zinc": {
+        "ideal": (1.0, 3.0),
+        "tolerance": 2.0,
+        "weight": 0.05,
+        "label": {"en": "Zinc (Zn)", "hi": "जिंक (Zn)"},
+        "unit": "ppm",
+    },
+    "iron": {
+        "ideal": (10.0, 20.0),
+        "tolerance": 10.0,
+        "weight": 0.05,
+        "label": {"en": "Iron (Fe)", "hi": "लोहा (Fe)"},
+        "unit": "ppm",
+    },
+    "manganese": {
+        "ideal": (8.0, 11.0),
+        "tolerance": 3.0,
+        "weight": 0.04,
+        "label": {"en": "Manganese (Mn)", "hi": "मैंगनीज (Mn)"},
+        "unit": "ppm",
+    },
+    "copper": {
+        "ideal": (0.8, 1.0),
+        "tolerance": 0.2,
+        "weight": 0.04,
+        "label": {"en": "Copper (Cu)", "hi": "तांबा (Cu)"},
+        "unit": "ppm",
+    },
+    "potassium_ppm": {
+        "ideal": (165.0, 220.0),
+        "tolerance": 55.0,
+        "weight": 0.06,
+        "label": {"en": "Potassium (K) - ppm", "hi": "पोटाशियम (K) - ppm"},
+        "unit": "ppm",
+    },
+    "calcium": {
+        "ideal": (1400.0, 999999.0),
+        "tolerance": 500.0,
+        "weight": 0.06,
+        "label": {"en": "Calcium (Ca)", "hi": "कैल्शियम (Ca)"},
+        "unit": "ppm",
+    },
+    "magnesium": {
+        "ideal": (100.0, 999999.0),
+        "tolerance": 200.0,
+        "weight": 0.05,
+        "label": {"en": "Magnesium (Mg)", "hi": "मैग्नीशियम (Mg)"},
+        "unit": "ppm",
+    },
+    "sodium": {
+        "ideal": (80.0, 120.0),
+        "tolerance": 40.0,
+        "weight": 0.04,
+        "label": {"en": "Sodium (Na)", "hi": "सोडियम (Na)"},
+        "unit": "ppm",
+    },
 }
 
 HI_TO_MR_REPLACEMENTS = [
@@ -94,6 +164,14 @@ HI_TO_MR_REPLACEMENTS = [
     ("सुझाव", "सल्ला"),
     ("कारण", "कारणे"),
     ("आदर्श", "आदर्श"),
+    ("सल्फर", "गंधक"),
+    ("जिंक", "जिंक"),
+    ("लोहा", "लोह"),
+    ("मैंगनीज", "मँगनीज"),
+    ("तांबा", "तांबे"),
+    ("कैल्शियम", "कॅल्शियम"),
+    ("मैग्नीशियम", "मॅग्नेशियम"),
+    ("सोडियम", "सोडियम"),
 ]
 
 

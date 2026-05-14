@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Profit Calculator</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    input, button { margin: 10px; padding: 8px; }
+    .result { margin-top: 20px; font-size: 18px; }
+  </style>
+</head>
+<body>
+
+<h2>🌾 Crop Profit Calculator</h2>
+
+<label>Crop Name:</label>
+<input type="text" id="crop"><br>
+
+<label>Land Area (hectare):</label>
+<input type="number" id="area"><br>
+
+<label>Cost of Seeds (₹):</label>
+<input type="number" id="seeds"><br>
+
+<label>Fertilizer Cost (₹):</label>
+<input type="number" id="fertilizer"><br>
+
+<label>Labor Cost (₹):</label>
+<input type="number" id="labor"><br>
+
+<button onclick="calculateProfit()">Calculate Profit</button>
+
+<div class="result" id="result"></div>
+
+<script>
+async function calculateProfit() {
+    const crop = document.getElementById("crop").value;
+    const area = parseFloat(document.getElementById("area").value);
+    const seeds = parseFloat(document.getElementById("seeds").value);
+    const fertilizer = parseFloat(document.getElementById("fertilizer").value);
+    const labor = parseFloat(document.getElementById("labor").value);
+
+    const totalCost = seeds + fertilizer + labor;
+
+    // Dummy yield (kg per hectare)
+    const yieldData = {
+        tomato: 25000,
+        wheat: 3000,
+        rice: 4000
+    };
+
+    const yieldPerHectare = yieldData[crop.toLowerCase()] || 20000;
+    const totalYield = yieldPerHectare * area;
+
+    // Fetch price from backend
+    const response = await fetch(`http://localhost:5000/price?crop=${crop}`);
+    const data = await response.json();
+
+    const price = data.price;
+
+    const revenue = totalYield * price;
+    const profit = revenue - totalCost;
+
+    document.getElementById("result").innerHTML = `
+        🌾 Yield: ${totalYield} kg <br>
+        💰 Market Price: ₹${price}/kg <br>
+        📊 Revenue: ₹${revenue} <br>
+        💸 Cost: ₹${totalCost} <br><br>
+        <b>${profit >= 0 ? "✅ Profit" : "❌ Loss"}: ₹${profit}</b>
+    `;
+}
+</script>
+
+</body>
+</html>

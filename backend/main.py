@@ -491,6 +491,17 @@ class SoilHealthRequest(BaseModel):
     moisture: float          # %      optimal: 40–70
     organic_carbon: Optional[float] = None   # %  good: >1.5
     ec: Optional[float] = None               # dS/m optimal: 0–2
+    # Micronutrients and additional macronutrients in ppm
+    phosphorus_ppm: Optional[float] = None   # ppm  optimal: 25–35
+    sulfur: Optional[float] = None           # ppm  optimal: 7–15
+    zinc: Optional[float] = None             # ppm  optimal: 1–3
+    iron: Optional[float] = None             # ppm  optimal: 10–20
+    manganese: Optional[float] = None        # ppm  optimal: 8–11
+    copper: Optional[float] = None           # ppm  optimal: 0.8–1
+    potassium_ppm: Optional[float] = None    # ppm  optimal: 165–220
+    calcium: Optional[float] = None          # ppm  optimal: 1400+
+    magnesium: Optional[float] = None        # ppm  optimal: 100+
+    sodium: Optional[float] = None           # ppm  optimal: 80–120
 
 
 def _score_param(value: float, low_crit: float, low_ok: float, high_ok: float, high_crit: float) -> tuple[int, str]:
@@ -621,6 +632,156 @@ def _analyze_soil(req: SoilHealthRequest) -> dict:
         if req.ec > 2.0:
             reasons.append(f"High EC ({req.ec} dS/m) — soil salinity may reduce germination and crop yield.")
             solutions.append("Apply heavy irrigation to leach salts. Use gypsum for sodic soils.")
+
+    # ── Phosphorus (ppm) ─────────────────────────────────────────
+    if req.phosphorus_ppm is not None:
+        p_ppm_score, p_ppm_status = _score_param(req.phosphorus_ppm, 10, 25, 35, 50)
+        metrics["phosphorus_ppm"] = {
+            "label": "Phosphorus (ppm)",
+            "value": req.phosphorus_ppm,
+            "unit": "ppm",
+            "score": p_ppm_score,
+            "status": p_ppm_status,
+            "note": "Optimal: 25–35 ppm",
+        }
+        if req.phosphorus_ppm < 25:
+            reasons.append(f"Low phosphorus ({req.phosphorus_ppm} ppm) — may limit root development.")
+            solutions.append("Apply phosphate fertiliser or rock phosphate.")
+
+    # ── Sulfur ──────────────────────────────────────────────────
+    if req.sulfur is not None:
+        s_score, s_status = _score_param(req.sulfur, 2, 7, 15, 25)
+        metrics["sulfur"] = {
+            "label": "Sulfur (ppm)",
+            "value": req.sulfur,
+            "unit": "ppm",
+            "score": s_score,
+            "status": s_status,
+            "note": "Optimal: 7–15 ppm",
+        }
+        if req.sulfur < 7:
+            reasons.append(f"Low sulfur ({req.sulfur} ppm) — may affect crop quality and disease resistance.")
+            solutions.append("Apply sulfur fertiliser or elemental sulfur.")
+
+    # ── Zinc ─────────────────────────────────────────────────────
+    if req.zinc is not None:
+        zn_score, zn_status = _score_param(req.zinc, 0.2, 1.0, 3.0, 5.0)
+        metrics["zinc"] = {
+            "label": "Zinc (ppm)",
+            "value": req.zinc,
+            "unit": "ppm",
+            "score": zn_score,
+            "status": zn_status,
+            "note": "Optimal: 1–3 ppm",
+        }
+        if req.zinc < 1.0:
+            reasons.append(f"Low zinc ({req.zinc} ppm) — may cause stunted growth and poor crop quality.")
+            solutions.append("Apply zinc sulfate or zinc oxide.")
+
+    # ── Iron ─────────────────────────────────────────────────────
+    if req.iron is not None:
+        fe_score, fe_status = _score_param(req.iron, 3, 10, 20, 30)
+        metrics["iron"] = {
+            "label": "Iron (ppm)",
+            "value": req.iron,
+            "unit": "ppm",
+            "score": fe_score,
+            "status": fe_status,
+            "note": "Optimal: 10–20 ppm",
+        }
+        if req.iron < 10:
+            reasons.append(f"Low iron ({req.iron} ppm) — may cause chlorosis and reduced photosynthesis.")
+            solutions.append("Apply iron chelate or iron sulfate.")
+
+    # ── Manganese ───────────────────────────────────────────────
+    if req.manganese is not None:
+        mn_score, mn_status = _score_param(req.manganese, 2, 8, 11, 20)
+        metrics["manganese"] = {
+            "label": "Manganese (ppm)",
+            "value": req.manganese,
+            "unit": "ppm",
+            "score": mn_score,
+            "status": mn_status,
+            "note": "Optimal: 8–11 ppm",
+        }
+        if req.manganese < 8:
+            reasons.append(f"Low manganese ({req.manganese} ppm) — affects enzyme activity and plant metabolism.")
+            solutions.append("Apply manganese sulfate or oxide.")
+
+    # ── Copper ──────────────────────────────────────────────────
+    if req.copper is not None:
+        cu_score, cu_status = _score_param(req.copper, 0.2, 0.8, 1.0, 2.0)
+        metrics["copper"] = {
+            "label": "Copper (ppm)",
+            "value": req.copper,
+            "unit": "ppm",
+            "score": cu_score,
+            "status": cu_status,
+            "note": "Optimal: 0.8–1 ppm",
+        }
+        if req.copper < 0.8:
+            reasons.append(f"Low copper ({req.copper} ppm) — may reduce grain quality and disease resistance.")
+            solutions.append("Apply copper sulfate or copper oxide.")
+
+    # ── Potassium (ppm) ─────────────────────────────────────────
+    if req.potassium_ppm is not None:
+        k_ppm_score, k_ppm_status = _score_param(req.potassium_ppm, 50, 165, 220, 300)
+        metrics["potassium_ppm"] = {
+            "label": "Potassium (ppm)",
+            "value": req.potassium_ppm,
+            "unit": "ppm",
+            "score": k_ppm_score,
+            "status": k_ppm_status,
+            "note": "Optimal: 165–220 ppm",
+        }
+        if req.potassium_ppm < 165:
+            reasons.append(f"Low potassium ({req.potassium_ppm} ppm) — reduces stress tolerance and quality.")
+            solutions.append("Apply potassium chloride or potassium sulfate.")
+
+    # ── Calcium ─────────────────────────────────────────────────
+    if req.calcium is not None:
+        ca_score, ca_status = _score_param(req.calcium, 600, 1400, 9999, 10000)
+        metrics["calcium"] = {
+            "label": "Calcium (ppm)",
+            "value": req.calcium,
+            "unit": "ppm",
+            "score": ca_score,
+            "status": ca_status,
+            "note": "Optimal: 1400+ ppm",
+        }
+        if req.calcium < 1400:
+            reasons.append(f"Low calcium ({req.calcium} ppm) — may cause blossom-end rot and weak cell walls.")
+            solutions.append("Apply gypsum or ground limestone.")
+
+    # ── Magnesium ───────────────────────────────────────────────
+    if req.magnesium is not None:
+        mg_score, mg_status = _score_param(req.magnesium, 30, 100, 9999, 10000)
+        metrics["magnesium"] = {
+            "label": "Magnesium (ppm)",
+            "value": req.magnesium,
+            "unit": "ppm",
+            "score": mg_score,
+            "status": mg_status,
+            "note": "Optimal: 100+ ppm",
+        }
+        if req.magnesium < 100:
+            reasons.append(f"Low magnesium ({req.magnesium} ppm) — may cause yellowing of older leaves (chlorosis).")
+            solutions.append("Apply magnesium sulfate (Epsom salt) or dolomitic limestone.")
+
+    # ── Sodium ──────────────────────────────────────────────────
+    if req.sodium is not None:
+        na_score, na_status = _score_param(req.sodium, 20, 80, 120, 200)
+        metrics["sodium"] = {
+            "label": "Sodium (ppm)",
+            "value": req.sodium,
+            "unit": "ppm",
+            "score": na_score,
+            "status": na_status,
+            "note": "Optimal: 80–120 ppm",
+        }
+        if req.sodium > 120:
+            reasons.append(f"High sodium ({req.sodium} ppm) — excess salts may damage soil structure and reduce crop yield.")
+            solutions.append("Leach soil with freshwater irrigation and apply gypsum.")
 
     # ── Overall score & status ────────────────────────────────────
     all_scores = [m["score"] for m in metrics.values()]
