@@ -1,0 +1,298 @@
+/* ── Soil Analysis Page (ChatGPT AI Report) ─────────────────────────────── */
+
+.sa-page {
+  /* Fills the full main-content area */
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.sa-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sa-header-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f5f3ff;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35);
+  flex-shrink: 0;
+}
+
+/* ── Main Grid — two equal columns ──────────────────────────────────────── */
+.sa-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+/* ── Form Card ──────────────────────────────────────────────────────────── */
+.sa-form-card {
+  padding: 24px;
+  border: 1px solid rgba(139, 92, 246, 0.28);
+  box-shadow: 0 0 24px rgba(139, 92, 246, 0.08);
+  position: sticky;
+  top: 24px;
+  align-self: start;
+}
+
+.sa-section-title {
+  margin-bottom: 16px;
+}
+
+.sa-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.sa-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sa-field-full {
+  grid-column: 1 / -1;
+}
+
+/* ── Micronutrient Section Divider ──────────────────────────────────────── */
+.sa-micro-divider {
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-medium);
+}
+
+.sa-micro-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sa-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sa-unit {
+  font-weight: 400;
+  color: var(--text-tertiary);
+  text-transform: none;
+  font-size: 0.7rem;
+}
+
+.sa-input {
+  width: 100%;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.sa-input:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.14);
+}
+
+.sa-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* ── Submit Button ──────────────────────────────────────────────────────── */
+.sa-submit-wrap {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sa-submit-btn {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3) !important;
+}
+
+.sa-submit-btn:hover:not(:disabled) {
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.45) !important;
+  transform: translateY(-1px);
+}
+
+.sa-submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* ── Spinner ────────────────────────────────────────────────────────────── */
+.sa-spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* ── Output Column ──────────────────────────────────────────────────────── */
+.sa-output-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sa-placeholder {
+  padding: 40px 24px;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.sa-error-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--status-critical);
+}
+
+/* ── Report Card ────────────────────────────────────────────────────────── */
+.sa-report-card {
+  padding: 24px;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.sa-report-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: #c4b5fd;
+}
+
+.sa-report-body {
+  color: var(--text-secondary);
+  line-height: 1.8;
+  font-size: 0.92rem;
+}
+
+/* Markdown report styles */
+.sa-report-body h1,
+.sa-report-body h2,
+.sa-report-body h3,
+.sa-report-body h4 {
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+}
+
+.sa-report-body h1 { font-size: 1.4rem; }
+.sa-report-body h2 { font-size: 1.2rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px; }
+.sa-report-body h3 { font-size: 1.05rem; }
+
+.sa-report-body p {
+  margin-bottom: 0.75em;
+}
+
+.sa-report-body ul,
+.sa-report-body ol {
+  padding-left: 1.5em;
+  margin-bottom: 0.75em;
+}
+
+.sa-report-body li {
+  margin-bottom: 0.35em;
+}
+
+.sa-report-body strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.sa-report-body code {
+  background: rgba(139, 92, 246, 0.12);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  color: #c4b5fd;
+}
+
+.sa-report-body blockquote {
+  border-left: 3px solid #8b5cf6;
+  padding-left: 16px;
+  margin: 1em 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.sa-report-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+.sa-report-body th,
+.sa-report-body td {
+  padding: 8px 12px;
+  border: 1px solid var(--border-medium);
+  text-align: left;
+  font-size: 0.88rem;
+}
+
+.sa-report-body th {
+  background: rgba(139, 92, 246, 0.1);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.sa-report-body hr {
+  border: none;
+  border-top: 1px solid var(--border-subtle);
+  margin: 1.5em 0;
+}
+
+/* fallback plain text */
+.sa-report-text {
+  white-space: pre-line;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .sa-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .sa-fields-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sa-submit-wrap {
+    justify-content: stretch;
+  }
+
+  .sa-submit-wrap .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

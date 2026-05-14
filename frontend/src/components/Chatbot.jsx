@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Leaf, CloudSun, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useLanguage } from '../context/LanguageContext';
 import { sendChatMessage, getWeather } from '../utils/api';
 import { getFeatureContext } from '../utils/featureContext';
@@ -56,7 +58,12 @@ export default function Chatbot() {
   const recognitionRef = useRef(null);
   const isAiMode = assistantMode !== 'local';
 
-  const speechLocale = lang === 'hi' ? 'hi-IN' : lang === 'mr' ? 'mr-IN' : 'en-US';
+  const SPEECH_LOCALES = {
+    en: 'en-US', hi: 'hi-IN', mr: 'mr-IN', ta: 'ta-IN', te: 'te-IN',
+    kn: 'kn-IN', bn: 'bn-IN', gu: 'gu-IN', pa: 'pa-IN', ml: 'ml-IN',
+    or: 'or-IN', ur: 'ur-PK',
+  };
+  const speechLocale = SPEECH_LOCALES[lang] || 'en-US';
 
   useEffect(() => {
     return () => {
@@ -282,12 +289,20 @@ export default function Chatbot() {
             {messages.map((msg, i) => (
               <div key={i} className={`chatbot-msg chatbot-msg-${msg.role}`}>
                 <div className={`chatbot-bubble chatbot-bubble-${msg.role}`}>
-                  {msg.text.split('\n').map((line, j, arr) => (
-                    <span key={j}>
-                      {line}
-                      {j < arr.length - 1 && <br />}
-                    </span>
-                  ))}
+                  {msg.role === 'bot' ? (
+                    <div className="chatbot-md">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {msg.text}
+                      </ReactMarkdown>
+                    </div>
+                  ) : (
+                    msg.text.split('\n').map((line, j, arr) => (
+                      <span key={j}>
+                        {line}
+                        {j < arr.length - 1 && <br />}
+                      </span>
+                    ))
+                  )}
                   {msg.role === 'bot' && (
                     <div className="chatbot-msg-source">
                       {msg.source !== 'local' ? t('chat_source_ai') : t('chat_source_local')}

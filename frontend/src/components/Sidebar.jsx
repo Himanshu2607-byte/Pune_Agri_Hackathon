@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage, SUPPORTED_LANGUAGES } from '../context/LanguageContext';
 import {
   LayoutDashboard,
   ScanLine,
@@ -15,8 +15,10 @@ import {
   FlaskConical,
   FileText,
   DollarSign,
+  Microscope,
+  ChevronDown,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import './Sidebar.css';
 
 const navItems = [
@@ -30,12 +32,28 @@ const navItems = [
   { path: '/library', icon: BookMarked, labelKey: 'nav_library' },
   { path: '/tasks', icon: ClipboardList, labelKey: 'nav_tasks' },
   { path: '/summarizer', icon: FileText, labelKey: 'nav_summarizer' },
+  { path: '/soil-analysis', icon: Microscope, labelKey: 'nav_soil_analysis' },
 ];
 
 export default function Sidebar() {
-  const { t, toggleLang, lang } = useLanguage();
+  const { t, lang, changeLang } = useLanguage();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const currentLang = SUPPORTED_LANGUAGES.find(l => l.code === lang) || SUPPORTED_LANGUAGES[0];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setLangDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <>
@@ -87,10 +105,47 @@ export default function Sidebar() {
 
         {/* Footer */}
         <div className="sidebar-footer">
-          <button className="sidebar-lang-btn" onClick={toggleLang}>
-            <Languages size={18} />
-            <span>{t('lang_toggle')}</span>
-          </button>
+          {/* Language Picker Dropdown */}
+          <div className="sidebar-lang-picker" ref={dropdownRef}>
+            <button
+              className="sidebar-lang-btn"
+              onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+            >
+              <Languages size={18} />
+              <span className="sidebar-lang-current">
+                {currentLang.flag} {currentLang.nativeName}
+              </span>
+              <ChevronDown
+                size={14}
+                className={`sidebar-lang-chevron ${langDropdownOpen ? 'sidebar-lang-chevron-open' : ''}`}
+              />
+            </button>
+
+            {langDropdownOpen && (
+              <div className="sidebar-lang-dropdown">
+                <div className="sidebar-lang-dropdown-header">
+                  🌐 Select Language
+                </div>
+                <div className="sidebar-lang-dropdown-list">
+                  {SUPPORTED_LANGUAGES.map(l => (
+                    <button
+                      key={l.code}
+                      className={`sidebar-lang-option ${l.code === lang ? 'sidebar-lang-option-active' : ''}`}
+                      onClick={() => {
+                        changeLang(l.code);
+                        setLangDropdownOpen(false);
+                      }}
+                    >
+                      <span className="sidebar-lang-option-flag">{l.flag}</span>
+                      <span className="sidebar-lang-option-native">{l.nativeName}</span>
+                      <span className="sidebar-lang-option-name">{l.name}</span>
+                      {l.code === lang && <span className="sidebar-lang-option-check">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
           <div className="sidebar-version">{t('sidebar_version')}</div>
         </div>
       </aside>

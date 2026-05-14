@@ -105,6 +105,16 @@ export async function analyzeSoilHealth(payload) {
   return response.json();
 }
 
+export async function analyzeSoilChatGPT(payload) {
+  const response = await fetchWithRetry(`${API_BASE}/analyze-soil`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  return response.json();
+}
+
 // ── Field Journal ──────────────────────────────────────────────────
 
 export async function getJournalEntries() {

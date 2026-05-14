@@ -55,6 +55,7 @@ class ChatRequest(BaseModel):
     message: str
     lang: str = "en"
     weather: dict | None = None
+    feature_context: dict | None = None
 
 
 class ChatResponse(BaseModel):
@@ -238,7 +239,9 @@ async def chat_endpoint(request: ChatRequest):
     Returns: AI-generated farming advice.
     """
     try:
-        response, source = get_ai_chat_response(chatbot, request.message, request.lang, request.weather)
+        response, source = get_ai_chat_response(
+            chatbot, request.message, request.lang, request.weather, request.feature_context
+        )
         return ChatResponse(response=response, source=source)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chat failed: {str(e)}")
@@ -870,6 +873,108 @@ async def soil_health_endpoint(req: SoilHealthRequest):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Soil analysis failed: {str(e)}")
+
+
+# ── AI Soil Analysis (OpenAI ChatGPT) ────────────────────────────────────
+
+class AISoilAnalysisRequest(BaseModel):
+    nitrogen: float
+    phosphorus: float
+    potassium: float
+    ph: float
+    moisture: float
+    organic_carbon: Optional[float] = None
+    ec: Optional[float] = None
+    # Micronutrients & additional macronutrients (ppm) — from Himanshu's work
+    phosphorus_ppm: Optional[float] = None
+    sulfur: Optional[float] = None
+    zinc: Optional[float] = None
+    iron: Optional[float] = None
+    manganese: Optional[float] = None
+    copper: Optional[float] = None
+    potassium_ppm: Optional[float] = None
+    calcium: Optional[float] = None
+    magnesium: Optional[float] = None
+    sodium: Optional[float] = None
+
+
+SOIL_SYSTEM_PROMPT = (
+    "You are an expert Agronomist. Analyze the provided soil test values including "
+    "primary macronutrients (N, P, K), pH, Moisture, and any micronutrients or secondary "
+    "macronutrients when provided. Return a structured Markdown report containing: "
+    "A Soil Health Summary, a Parameter Analysis identifying deficiencies (including "
+    "micronutrient deficiencies if data is provided), 3 Recommended Crops, and an "
+    "Action Plan for soil amendments."
+)
+
+
+@app.post("/analyze-soil")
+async def analyze_soil_chatgpt(req: AISoilAnalysisRequest):
+    """
+    Generate an AI agronomist report using OpenAI ChatGPT.
+
+    Accepts: N, P, K, pH, Moisture, optional Organic Carbon / EC,
+    and optional micronutrients (S, Zn, Fe, Mn, Cu, Ca, Mg, Na, P-ppm, K-ppm).
+    Returns: A Markdown-formatted soil health report from ChatGPT.
+    """
+    api_key = os.getenv("OPENAI_API_KEY", "")
+    if not api_key:
+        raise HTTPException(
+            status_code=500,
+            detail="OPENAI_API_KEY is not configured on the server. Please set it in your .env file.",
+        )
+
+    # Build user message from the soil inputs
+    lines = [
+        f"Nitrogen (N): {req.nitrogen} kg/ha",
+        f"Phosphorus (P): {req.phosphorus} kg/ha",
+        f"Potassium (K): {req.potassium} kg/ha",
+        f"Soil pH: {req.ph}",
+        f"Moisture: {req.moisture}%",
+    ]
+    if req.organic_carbon is not None:
+        lines.append(f"Organic Carbon: {req.organic_carbon}%")
+    if req.ec is not None:
+        lines.append(f"Electrical Conductivity: {req.ec} dS/m")
+
+    # Micronutrients & secondary macronutrients
+    micro_map = {
+        "phosphorus_ppm": ("Phosphorus (ppm)", req.phosphorus_ppm),
+        "sulfur": ("Sulfur (ppm)", req.sulfur),
+        "zinc": ("Zinc (ppm)", req.zinc),
+        "iron": ("Iron (ppm)", req.iron),
+        "manganese": ("Manganese (ppm)", req.manganese),
+        "copper": ("Copper (ppm)", req.copper),
+        "potassium_ppm": ("Potassium (ppm)", req.potassium_ppm),
+        "calcium": ("Calcium (ppm)", req.calcium),
+        "magnesium": ("Magnesium (ppm)", req.magnesium),
+        "sodium": ("Sodium (ppm)", req.sodium),
+    }
+    micro_lines = [f"{label}: {val}" for label, val in micro_map.values() if val is not None]
+    if micro_lines:
+        lines.append("")
+        lines.append("Micronutrients & Secondary Macronutrients:")
+        lines.extend(micro_lines)
+
+    user_message = "Analyze the following soil test results:\n\n" + "\n".join(lines)
+
+    try:
+        from openai import OpenAI
+
+        client = OpenAI(api_key=api_key)
+        completion = client.chat.completions.create(
+            model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+            messages=[
+                {"role": "system", "content": SOIL_SYSTEM_PROMPT},
+                {"role": "user", "content": user_message},
+            ],
+            temperature=0.4,
+            max_tokens=1200,
+        )
+        report_md = completion.choices[0].message.content
+        return {"report": report_md}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"ChatGPT analysis failed: {str(e)}")
 
 
 # ── Serve React Frontend (Cloud Run production) ─────────────────

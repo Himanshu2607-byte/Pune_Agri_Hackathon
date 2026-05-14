@@ -8,6 +8,7 @@ const translations = {
     nav_soil_health: 'Soil Health',
     nav_journal: 'Field Journal',
     nav_summarizer: 'Summarizer',
+    nav_soil_analysis: 'AI Soil Analysis',
     brand_name: 'AgroVision',
     brand_tagline: 'Smart Crop Monitoring',
     sidebar_toggle_menu: 'Toggle menu',
@@ -451,6 +452,7 @@ const translations = {
     nav_soil_health: 'मिट्टी स्वास्थ्य',
     nav_journal: 'फील्ड डायरी',
     nav_summarizer: 'सारांश रिपोर्ट',
+    nav_soil_analysis: 'AI मिट्टी विश्लेषण',
     brand_name: 'एग्रोविजन',
     brand_tagline: 'स्मार्ट फसल निगरानी',
     sidebar_toggle_menu: 'मेनू बदलें',
@@ -950,6 +952,26 @@ const toMarathiValue = (value) => {
 translations.mr = {
   ...toMarathiValue(translations.hi),
   lang_toggle: 'English',
+
+  // ── Chat translations (proper Marathi overrides) ──
+  chat_title: 'AgroVision सहाय्यक',
+  chat_placeholder: 'पीक आरोग्य, किड, खत याबद्दल विचारा...',
+  chat_send: 'पाठवा',
+  chat_greeting: 'नमस्कार! मी तुमचा कृषी सहाय्यक आहे. पीक आरोग्याबद्दल काहीही विचारा!',
+  chat_status_ai: 'AI हवामान-जागरूक मोड',
+  chat_status_local: 'स्थानिक कृषी मोड',
+  chat_source_ai: 'AI प्रतिसाद',
+  chat_source_local: 'स्थानिक सहाय्यक',
+  chat_error_generic: 'माफ करा, काहीतरी चूक झाली. कृपया पुन्हा प्रयत्न करा.',
+  chat_open_aria: 'चॅट सहाय्यक उघडा',
+  chat_close_aria: 'चॅट सहाय्यक बंद करा',
+  chat_mic_start: 'आवाज इनपुट सुरू करा',
+  chat_mic_stop: 'आवाज इनपुट थांबवा',
+  chat_voice_not_supported: 'या ब्राउझरमध्ये आवाज इनपुट समर्थित नाही.',
+  chat_voice_error: 'आवाज कॅप्चर अयशस्वी. कृपया पुन्हा प्रयत्न करा.',
+  chat_voice_listening: 'ऐकत आहे... आता बोला',
+  chat_speak_on: 'आवाज प्लेबॅक चालू',
+  chat_speak_off: 'आवाज प्लेबॅक बंद',
 };
 
 export default translations;
