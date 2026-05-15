@@ -140,8 +140,8 @@ async def upload_soil_report(file: UploadFile = File(...)):
     """
     try:
         api_key = os.getenv("GEMINI_API_KEY", "MOCK")
-        if api_key == "MOCK" or not api_key:
-            return {"error": "GEMINI_API_KEY is missing. OCR parsing requires a valid API key."}
+        if api_key == "MOCK" or not api_key or api_key == "YOUR_GEMINI_API_KEY_HERE":
+            return {"error": "GEMINI_API_KEY is missing or invalid. Please configure a real API key in the .env file to enable OCR document parsing."}
             
         import tempfile
         import json
@@ -164,7 +164,7 @@ async def upload_soil_report(file: UploadFile = File(...)):
             If it is clearly a random image, a face, a car, or anything completely unrelated to soil/agriculture, 
             return EXACTLY this JSON: {"error": "Invalid Document: No soil parameters found."}
             
-            If it IS a soil report, extract the following 8 parameters and return EXACTLY this JSON format (use standard fallback values if a parameter is missing: ph 7.0, ec 1.0, organic_carbon 0.5, nitrogen 150, phosphorus 20, potassium 100, cation_exchange_capacity 15.0, exchangeable_sodium_percentage 5.0).
+            If it IS a soil report, extract the following 14 parameters and return EXACTLY this JSON format (use standard fallback values if a parameter is missing: ph 7.0, ec 1.0, organic_carbon 0.5, nitrogen 150, phosphorus 20, potassium 100, cation_exchange_capacity 15.0, exchangeable_sodium_percentage 5.0, sulphur 10.0, zinc 0.6, iron 4.5, copper 0.2, manganese 2.0, boron 0.5).
             
             {
                 "ph": float,
@@ -174,7 +174,13 @@ async def upload_soil_report(file: UploadFile = File(...)):
                 "phosphorus": float,
                 "potassium": float,
                 "cation_exchange_capacity": float,
-                "exchangeable_sodium_percentage": float
+                "exchangeable_sodium_percentage": float,
+                "sulphur": float,
+                "zinc": float,
+                "iron": float,
+                "copper": float,
+                "manganese": float,
+                "boron": float
             }
             
             Do not include any markdown formatting, only the raw JSON.
@@ -192,7 +198,6 @@ async def upload_soil_report(file: UploadFile = File(...)):
             return extracted_data
             
         finally:
-            import os
             if os.path.exists(temp_path):
                 os.remove(temp_path)
                 

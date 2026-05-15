@@ -1,5 +1,8 @@
+"""Advanced soil health analysis with STCR fertilizer mapping, micronutrient deficiency detection, and reclamation strategies."""
+
 from pydantic import BaseModel, Field
-from typing import List, Dict, Optional
+from typing import List, Optional, Any
+
 
 class SoilData(BaseModel):
     ph: float = Field(..., ge=1.0, le=14.0)
@@ -19,6 +22,7 @@ class SoilData(BaseModel):
     exchangeable_sodium_percentage: Optional[float] = Field(None, ge=0.0, le=100.0) # ESP %
     cation_exchange_capacity: Optional[float] = Field(None, ge=0.0, le=200.0) # CEC meq/100g
 
+
 class Recommendation(BaseModel):
     category: str
     action: str
@@ -26,10 +30,12 @@ class Recommendation(BaseModel):
     reason: str
     cost_estimate_inr: float = 0.0
 
+
 class CropSuggestion(BaseModel):
     name: str
     suitability: str
     reason: str
+
 
 class AnalysisResult(BaseModel):
     health_score: float
@@ -41,7 +47,8 @@ class AnalysisResult(BaseModel):
     total_cost_inr: float
     recovery_probability: float
 
-def analyze_soil(data: SoilData, ml_health_score: float) -> AnalysisResult:
+
+def analyze_soil(data: SoilData, ml_health_score: float = 75.0) -> AnalysisResult:
     issues = []
     recommendations = []
     crops = []
@@ -85,14 +92,13 @@ def analyze_soil(data: SoilData, ml_health_score: float) -> AnalysisResult:
         issues.append("high_alkalinity")
         issues.append("soil_dispersion_collapsed_pores")
         
-        # ICAR Optimized Displacement Equation: GR = (CEC * (ESP - 10) / 100 * 1.72) * 50% Optimization
-        # Note: 1.72 factor yields tonnes/hectare. Divide by 2.47 to get tonnes/acre.
+        # ICAR Optimized Displacement Equation
         delta_esp = max(0, esp - 10.0)
         gr_tonnes_hectare = (cec * (delta_esp / 100.0) * 1.72) * 0.5
         gr_tonnes_acre = round(gr_tonnes_hectare / 2.47, 2)
         
         if gr_tonnes_acre <= 0:
-            gr_tonnes_acre = 2.0 # Fallback baseline
+            gr_tonnes_acre = 2.0
             
         cost = gr_tonnes_acre * 1500 
         total_cost += cost
@@ -116,14 +122,14 @@ def analyze_soil(data: SoilData, ml_health_score: float) -> AnalysisResult:
     elif data.ph < 6.0:
         issues.append("low_ph")
         
-        # Agronomic Liming Factor Equation: (6.5 - pH) * 1.5
+        # Agronomic Liming Factor Equation
         ph_deficit = max(0, 6.5 - data.ph)
         lime_tonnes_acre = round(ph_deficit * 1.5, 2)
         
         if lime_tonnes_acre <= 0:
-            lime_tonnes_acre = 1.0 # Baseline floor
+            lime_tonnes_acre = 1.0
             
-        lime_cost = lime_tonnes_acre * 2000 # ₹2000 per tonne
+        lime_cost = lime_tonnes_acre * 2000
         total_cost += lime_cost
         
         recommendations.append(Recommendation(
@@ -168,21 +174,20 @@ def analyze_soil(data: SoilData, ml_health_score: float) -> AnalysisResult:
         ])
 
     # -----------------------------------------------------------------
-    # Stage 2: Calculating Carbon Deficit (Using Organic Carbon %)
+    # Stage 2: Calculating Carbon Deficit
     # -----------------------------------------------------------------
     target_oc = 0.75
     if data.organic_carbon < target_oc:
         issues.append("low_oc")
         
-        # Dynamic parameter-based step function according to ICAR INM guidelines
         if data.organic_carbon < 0.4:
-            annual_dose = 5.0  # Severe Deficit: Intensive rebuild dose
+            annual_dose = 5.0
         elif data.organic_carbon < 0.6:
-            annual_dose = 3.0  # Moderate Deficit: Standard recovery dose
+            annual_dose = 3.0
         else:
-            annual_dose = 1.5  # Mild Deficit: Routine maintenance dose
+            annual_dose = 1.5
             
-        compost_cost = annual_dose * 1000 # ₹1000 per tonne
+        compost_cost = annual_dose * 1000
         total_cost += compost_cost
         
         recommendations.append(Recommendation(
@@ -195,27 +200,25 @@ def analyze_soil(data: SoilData, ml_health_score: float) -> AnalysisResult:
         probability -= 5
 
     # -----------------------------------------------------------------
-    # Stage 2.5: The Biological Engine (Microbial & Green Manure)
+    # Stage 2.5: The Biological Engine
     # -----------------------------------------------------------------
     if data.nitrogen < 280 or data.organic_carbon < 0.5:
-        # Green Manuring
         recommendations.append(Recommendation(
             category="biological",
             action="grow_dhaincha",
             quantity="45 Days Growth",
             reason="narrow_cn_ratio_nitrogen_fix",
-            cost_estimate_inr=500 # Cost of Dhaincha seeds
+            cost_estimate_inr=500
         ))
         total_cost += 500
 
     if data.phosphorus < 25:
-        # Microbial Acidulation (PSB)
         recommendations.append(Recommendation(
             category="biological",
             action="inoculate_psb",
             quantity="250g PSB + 25kg FYM",
             reason="microbial_acidulation_phosphorus",
-            cost_estimate_inr=150 # Cost of Bio-inoculant packet
+            cost_estimate_inr=150
         ))
         total_cost += 150
 
@@ -265,20 +268,14 @@ def analyze_soil(data: SoilData, ml_health_score: float) -> AnalysisResult:
         total_cost += 350
 
     # -----------------------------------------------------------------
-    # Stage 3 & 4: Computing Nutrients & Commercial Fertilizer Mapping
+    # Stage 3 & 4: STCR Fertilizer Mapping
     # -----------------------------------------------------------------
-    # Target: Wheat (Yield = 40 quintals/hectare)
-    # STCR Standard Coefficients for Wheat
-    # FN = (4.0 * Y) - (0.4 * Soil N)
-    # FP = (2.5 * Y) - (0.5 * Soil P)
-    # FK = (2.5 * Y) - (0.2 * Soil K)
     target_yield_ha = 40.0
     
     fn_required_ha = (4.0 * target_yield_ha) - (0.4 * data.nitrogen)
     fp_required_ha = (2.5 * target_yield_ha) - (0.5 * data.phosphorus)
     fk_required_ha = (2.5 * target_yield_ha) - (0.2 * data.potassium)
     
-    # Convert kg/hectare to kg/acre (divide by 2.47)
     fn_required = max(0, fn_required_ha / 2.47)
     fp_required = max(0, fp_required_ha / 2.47)
     fk_required = max(0, fk_required_ha / 2.47)
@@ -286,11 +283,9 @@ def analyze_soil(data: SoilData, ml_health_score: float) -> AnalysisResult:
     if fn_required > 0 or fp_required > 0 or fk_required > 0:
         import math
         
-        # Stage 4: Mapping to Commercial Bags
         dap_kg = fp_required / 0.46
         dap_bags = math.ceil(dap_kg / 50.0)
         
-        # DAP contributes 18% Nitrogen. Deduct this from Urea requirement.
         n_from_dap = (dap_bags * 50.0) * 0.18
         remaining_n = max(0, fn_required - n_from_dap)
         
@@ -302,7 +297,7 @@ def analyze_soil(data: SoilData, ml_health_score: float) -> AnalysisResult:
         
         if dap_bags > 0:
             issues.append("low_phosphorus")
-            dap_cost = dap_bags * 1350 # ₹1350 per 50kg bag
+            dap_cost = dap_bags * 1350
             total_cost += dap_cost
             recommendations.append(Recommendation(
                 category="fertilizer",
@@ -314,7 +309,7 @@ def analyze_soil(data: SoilData, ml_health_score: float) -> AnalysisResult:
             
         if urea_bags > 0:
             issues.append("low_nitrogen")
-            urea_cost = urea_bags * 266.50 # ₹266.50 per 45kg bag
+            urea_cost = urea_bags * 266.50
             total_cost += urea_cost
             recommendations.append(Recommendation(
                 category="fertilizer",
@@ -326,7 +321,7 @@ def analyze_soil(data: SoilData, ml_health_score: float) -> AnalysisResult:
             
         if mop_bags > 0:
             issues.append("low_potassium")
-            mop_cost = mop_bags * 1700 # ₹1700 per 50kg bag
+            mop_cost = mop_bags * 1700
             total_cost += mop_cost
             recommendations.append(Recommendation(
                 category="fertilizer",
@@ -355,3 +350,60 @@ def analyze_soil(data: SoilData, ml_health_score: float) -> AnalysisResult:
         total_cost_inr=round(total_cost, 2),
         recovery_probability=probability
     )
+
+
+def analyze_soil_health(payload: dict[str, Any]) -> dict[str, Any]:
+    """Wrapper function to convert old payload format to new SoilData format."""
+    raw_lang = str(payload.get("lang", "en")).lower()
+    lang = raw_lang if raw_lang in {"hi", "mr"} else "en"
+
+    # Extract soil data from payload
+    soil_data = SoilData(
+        ph=payload.get("ph", 6.8),
+        ec=payload.get("ec", 0.5),
+        organic_carbon=payload.get("organic_carbon", 0.5),
+        nitrogen=payload.get("nitrogen", 150.0),
+        phosphorus=payload.get("phosphorus", 40.0),
+        potassium=payload.get("potassium", 150.0),
+        sulphur=payload.get("sulphur") or payload.get("sulfur"),
+        zinc=payload.get("zinc"),
+        iron=payload.get("iron"),
+        copper=payload.get("copper"),
+        manganese=payload.get("manganese"),
+        boron=payload.get("boron"),
+        exchangeable_sodium_percentage=payload.get("exchangeable_sodium_percentage"),
+        cation_exchange_capacity=payload.get("cation_exchange_capacity"),
+    )
+    
+    # Get ML health score if available, otherwise use default
+    ml_score = payload.get("ml_health_score", 75.0)
+    
+    # Call new analyze_soil function
+    result = analyze_soil(soil_data, ml_score)
+    
+    # Convert result to old format for backward compatibility
+    return {
+        "health_status": "Healthy" if result.health_score > 75 else "Moderate" if result.health_score > 50 else "Poor",
+        "score": result.health_score,
+        "fertility_level": result.fertility_level,
+        "soil_type": result.soil_type,
+        "issues": result.issues,
+        "reasons": [r.reason for r in result.recommendations],
+        "solutions": [{"action": r.action, "quantity": r.quantity, "category": r.category} for r in result.recommendations],
+        "suggested_crops": [c.name for c in result.crops],
+        "recommendations": [
+            {
+                "category": r.category,
+                "action": r.action,
+                "quantity": r.quantity,
+                "reason": r.reason,
+                "cost_estimate_inr": r.cost_estimate_inr,
+            }
+            for r in result.recommendations
+        ],
+        "total_cost_inr": result.total_cost_inr,
+        "recovery_probability": result.recovery_probability,
+        "metric_breakdown": {},
+        "report": f"Soil health score: {result.health_score}, Fertility: {result.fertility_level}",
+        "report_source": "stcr_analysis",
+    }

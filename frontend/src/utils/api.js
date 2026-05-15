@@ -161,3 +161,30 @@ export async function updateTaskStatus(id, status) {
 export async function deleteTask(id) {
   await fetchWithRetry(`${API_BASE}/tasks/${id}`, { method: 'DELETE' });
 }
+export async function uploadSoilReport(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await fetchWithRetry(`${API_BASE}/api/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+  return response.json();
+}
+
+export async function performBhoomiAnalysis(payload) {
+  const response = await fetchWithRetry(`${API_BASE}/api/analyze`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return response.json();
+}
+
+export async function verifyBhoomiRecommendation(recommendationText) {
+  const response = await fetchWithRetry(`${API_BASE}/api/verify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ recommendation_text: recommendationText }),
+  });
+  return response.json();
+}
